@@ -360,11 +360,10 @@ class Region(NamedTuple):
         """Check if a point is in this region."""
         if isinstance(other, Region):
             return self.contains_region(other)
-        else:
-            try:
-                return self.contains_point(other)
-            except TypeError:
-                return False
+        try:
+            return self.contains_point(other)
+        except TypeError:
+            return False
 
     def clip(self, width: int, height: int) -> Region:
         """Clip this region to fit within width, height.
@@ -379,13 +378,12 @@ class Region(NamedTuple):
         x1, y1, x2, y2 = self.corners
 
         _clamp = clamp
-        new_region = Region.from_corners(
+        return Region.from_corners(
             _clamp(x1, 0, width),
             _clamp(y1, 0, height),
             _clamp(x2, 0, width),
             _clamp(y2, 0, height),
         )
-        return new_region
 
     def intersection(self, region: Region) -> Region:
         """Get that covers both regions.
@@ -404,10 +402,10 @@ class Region(NamedTuple):
         cx2 = cx1 + w2
         cy2 = cy1 + h2
 
-        rx1 = cx2 if x1 > cx2 else (cx1 if x1 < cx1 else x1)
-        ry1 = cy2 if y1 > cy2 else (cy1 if y1 < cy1 else y1)
-        rx2 = cx2 if x2 > cx2 else (cx1 if x2 < cx1 else x2)
-        ry2 = cy2 if y2 > cy2 else (cy1 if y2 < cy1 else y2)
+        rx1 = cx2 if x1 > cx2 else max(x1, cx1)
+        ry1 = cy2 if y1 > cy2 else max(y1, cy1)
+        rx2 = cx2 if x2 > cx2 else max(x2, cx1)
+        ry2 = cy2 if y2 > cy2 else max(y2, cy1)
 
         return Region(rx1, ry1, rx2 - rx1, ry2 - ry1)
 
@@ -423,10 +421,9 @@ class Region(NamedTuple):
         x1, y1, x2, y2 = self.corners
         ox1, oy1, ox2, oy2 = region.corners
 
-        union_region = Region.from_corners(
+        return Region.from_corners(
             min(x1, ox1), min(y1, oy1), max(x2, ox2), max(y2, oy2)
         )
-        return union_region
 
 
 class Spacing(NamedTuple):

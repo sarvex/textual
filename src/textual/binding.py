@@ -24,8 +24,7 @@ class Bindings:
 
     @property
     def shown_keys(self) -> list[Binding]:
-        keys = [binding for binding in self.keys.values() if binding.show]
-        return keys
+        return [binding for binding in self.keys.values() if binding.show]
 
     def bind(
         self,
@@ -55,9 +54,7 @@ class Bindings:
 
     def allow_forward(self, key: str) -> bool:
         binding = self.keys.get(key, None)
-        if binding is None:
-            return True
-        return binding.allow_forward
+        return True if binding is None else binding.allow_forward
 
 
 class BindingStack:

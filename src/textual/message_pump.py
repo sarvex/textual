@@ -115,9 +115,7 @@ class MessagePump:
             except QueueEmpty:
                 pass
 
-        if self._pending_message is not None:
-            return self._pending_message
-        return None
+        return self._pending_message if self._pending_message is not None else None
 
     def set_timer(
         self,
@@ -216,22 +214,24 @@ class MessagePump:
                 self.app.panic()
                 break
             finally:
-                if isinstance(message, events.Event) and self._message_queue.empty():
-                    if not self._closed:
-                        event = events.Idle(self)
-                        for method in self._get_dispatch_methods("on_idle", event):
-                            await method(event)
+                if (
+                    isinstance(message, events.Event)
+                    and self._message_queue.empty()
+                    and not self._closed
+                ):
+                    event = events.Idle(self)
+                    for method in self._get_dispatch_methods("on_idle", event):
+                        await method(event)
 
         log("CLOSED", self)
 
     async def dispatch_message(self, message: Message) -> bool | None:
         _rich_traceback_guard = True
         try:
-            if isinstance(message, events.Event):
-                if not isinstance(message, events.Null):
-                    await self.on_event(message)
-            else:
+            if not isinstance(message, events.Event):
                 return await self.on_message(message)
+            if not isinstance(message, events.Null):
+                await self.on_event(message)
         finally:
             message._done_event.set()
         return False

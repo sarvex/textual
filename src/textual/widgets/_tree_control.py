@@ -78,21 +78,20 @@ class TreeNode(Generic[NodeDataType]):
 
         if self.expanded and self.children:
             return self.children[0]
-        else:
+        sibling = self.next_sibling
+        if sibling is not None:
+            return sibling
 
-            sibling = self.next_sibling
-            if sibling is not None:
+        node = self
+        while True:
+            if node.parent is None:
+                return None
+            sibling = node.parent.next_sibling
+            if sibling is None:
+                node = node.parent
+
+            else:
                 return sibling
-
-            node = self
-            while True:
-                if node.parent is None:
-                    return None
-                sibling = node.parent.next_sibling
-                if sibling is not None:
-                    return sibling
-                else:
-                    node = node.parent
 
     @property
     def previous_node(self) -> TreeNode[NodeDataType] | None:
@@ -111,9 +110,7 @@ class TreeNode(Generic[NodeDataType]):
 
             return last_sibling(sibling)
 
-        if self.parent is None:
-            return None
-        return self.parent
+        return None if self.parent is None else self.parent
 
     @property
     def next_sibling(self) -> TreeNode[NodeDataType] | None:
